@@ -193,4 +193,11 @@ class HomeTabController extends GetxController
       isCheckCorrect.value = 2;
     }
   }
+
+  bool isCheckValueAnswer(String answer) {
+    if (answer == listQuestions.value?[numbQuestion.value].correctAnswer) {
+      return true;
+    }
+    return false;
+  }
 }

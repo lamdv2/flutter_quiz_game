@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_getx_base/models/questions/quiz_history_model.dart';
 import 'package:flutter_getx_base/modules/message/message.dart';
 import 'package:flutter_getx_base/shared/constants/app_style.dart';
+import 'package:flutter_getx_base/theme/theme_helper.dart';
 import 'package:get/get.dart';
 
 import '../../app_controller.dart';
@@ -17,27 +18,29 @@ class MessageScreen extends GetView<MessageController> {
   @override
   Widget build(BuildContext context) {
     controller.getHistoryFromSharedPreferences();
-    return Scaffold(
-      backgroundColor: appController.isDarkModeOn.value
-          ? ColorConstants.darkBackground
-          : ColorConstants.lightBackground,
-      extendBody: true,
-      resizeToAvoidBottomInset: true,
-      body: Padding(
-        padding: EdgeInsets.all(getSize(20)),
-        child: SingleChildScrollView(
-          child: Obx(
-            () => Column(
-              children: [
-                for (var history in controller.historyList.value ?? [])
-                  ItemHistoryWidget(
-                    controller: controller,
-                    quizHistory: history,
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: appController.isDarkModeOn.value
+            ? ColorConstants.darkBackground
+            : ColorConstants.lightBackground,
+        extendBody: true,
+        resizeToAvoidBottomInset: true,
+        body: Padding(
+          padding: EdgeInsets.all(getSize(20)),
+          child: SingleChildScrollView(
+            child: Obx(
+              () => Column(
+                children: [
+                  for (var history in controller.historyList.value ?? [])
+                    ItemHistoryWidget(
+                      controller: controller,
+                      quizHistory: history,
+                    ),
+                  SizedBox(
+                    height: getSize(48),
                   ),
-                SizedBox(
-                  height: getSize(48),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -60,23 +63,28 @@ class ItemHistoryWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              "Correct answer: ${quizHistory.numbCorrectAnswer}",
-              style: AppStyles.black000Size18Fw600FfNunito,
-            ),
-            SizedBox(
-              height: getSize(64),
-            ),
-            Text(
-              "${controller.formatDateTime(
-                quizHistory.time,
-              )}",
-              style: AppStyles.black000Size18Fw600FfNunito,
-            ),
-          ],
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(
+              color: appTheme.blue200, borderRadius: BorderRadius.circular(8)),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Correct answer: ${quizHistory.numbCorrectAnswer}",
+                style: AppStyles.black000Size18Fw600FfNunito,
+              ),
+              SizedBox(
+                height: getSize(64),
+              ),
+              Text(
+                "${controller.formatDateTime(
+                  quizHistory.time,
+                )}",
+                style: AppStyles.black000Size18Fw600FfNunito,
+              ),
+            ],
+          ),
         ),
         SizedBox(height: getSize(16)),
       ],

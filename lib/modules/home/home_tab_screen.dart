@@ -268,7 +268,11 @@ class ItemAnswerWidget extends StatelessWidget {
         width: double.infinity,
         padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: color,
+          color: !controller.isCheckChoose.value
+              ? color
+              : controller.isCheckValueAnswer(answer ?? '')
+                  ? Colors.green
+                  : Colors.red,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
