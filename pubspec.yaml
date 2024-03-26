@@ -37,7 +37,7 @@ dependencies:
   intl: ^0.18.1
   intl_phone_field: ^3.2.0
   like_button: ^2.0.5
-  loading_animation_widget: ^1.2.0+4
+  loading_animation_widget: ^1.2.1
   lottie: ^2.7.0
   permission_handler: ^10.4.3
   photo_manager: ^3.0.0-dev.2

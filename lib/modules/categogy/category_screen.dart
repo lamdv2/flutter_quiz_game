@@ -35,7 +35,7 @@ class CategoryScreen extends StatelessWidget {
               children: [
                 Center(
                   child: Text(
-                    "Category: ",
+                    "Category",
                     style: AppStyles.black000Size18Fw600FfNunito,
                   ),
                 ),

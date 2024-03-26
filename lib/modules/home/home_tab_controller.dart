@@ -20,8 +20,11 @@ class HomeTabController extends GetxController
   final numbCorrectAnswer = RxInt(0);
   final isCheckFinish = RxBool(false);
   final isCheckChoose = RxBool(false);
+  final isCheckLoading = RxBool(false);
   final isCheckCorrect = RxInt(0);
   final listAnswers = Rxn<List<String>>();
+  final listBestAnswers = Rxn<List<String>>([]);
+  final bestAnswer = Rxn<String>('');
 
   @override
   void onInit() {
@@ -29,7 +32,7 @@ class HomeTabController extends GetxController
     fetchData();
   }
 
-  void fetchData() async {
+  Future<void> fetchData() async {
     try {
       final dio = Dio();
       final response = await dio.get('https://opentdb.com/api.php?amount=10');
@@ -56,7 +59,7 @@ class HomeTabController extends GetxController
     }
   }
 
-  void fetchDataTrueFalseQuestion() async {
+  Future<void> fetchDataTrueFalseQuestion() async {
     try {
       final dio = Dio();
       final response =
@@ -78,6 +81,7 @@ class HomeTabController extends GetxController
           answers.shuffle();
           listAnswers.value = answers;
         }
+        setNewGame();
       } else {
         throw Exception('Failed to load data');
       }
@@ -86,7 +90,7 @@ class HomeTabController extends GetxController
     }
   }
 
-  void fetchDataChooseQuestion() async {
+  Future<void> fetchDataChooseQuestion() async {
     try {
       final dio = Dio();
       final response =
@@ -122,6 +126,7 @@ class HomeTabController extends GetxController
     isCheckFinish.value = true;
     saveHistoryGame();
     messageController.getHistoryFromSharedPreferences();
+    getBestAnswerFromSharedPreferences();
   }
 
   Future<void> saveHistoryGame() async {
@@ -139,13 +144,19 @@ class HomeTabController extends GetxController
     }
   }
 
-  void newQuizGame() {
+  void newQuizGame() async {
+    isCheckLoading.value = true;
+    await fetchData();
+    setNewGame();
+    isCheckLoading.value = false;
+  }
+
+  void setNewGame() {
     numbQuestion.value = 0;
     numbCorrectAnswer.value = 0;
     isCheckFinish.value = false;
     isCheckChoose.value = false;
     isCheckCorrect.value = 0;
-    fetchData();
   }
 
   void viewHistory() {
@@ -199,5 +210,29 @@ class HomeTabController extends GetxController
       return true;
     }
     return false;
+  }
+
+  Future<void> getBestAnswerFromSharedPreferences() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      List<String> historyStrings = prefs.getStringList('quizHistory') ?? [];
+
+      bestAnswer.value = '';
+
+      historyStrings.forEach((historyString) {
+        final Map<String, dynamic> historyJson = json.decode(historyString);
+        final QuizHistory history = QuizHistory.fromJson(historyJson);
+        listBestAnswers.value!.add(history.numbCorrectAnswer.toString());
+      });
+      listBestAnswers.value!.sort((a, b) => b.compareTo(a));
+      bestAnswer.value = listBestAnswers.value![0];
+    } catch (e) {
+      print('Error getting history: $e');
+    }
+  }
+
+  String bestResult() {
+    getBestAnswerFromSharedPreferences();
+    return bestAnswer.value ?? '';
   }
 }

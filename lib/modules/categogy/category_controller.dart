@@ -6,13 +6,17 @@ class CategoryController extends GetxController {
   final HomeTabController homeTabController = Get.find();
   final HomeController homeController = Get.find();
 
-  void callTrueFalseQuestion() {
+  void callTrueFalseQuestion() async {
+    homeTabController.isCheckLoading.value = true;
     homeController.bottomNavIndex.value = 0;
-    homeTabController.fetchDataTrueFalseQuestion();
+    await homeTabController.fetchDataTrueFalseQuestion();
+    homeTabController.isCheckLoading.value = false;
   }
 
-  void callChooseQuestion() {
+  void callChooseQuestion() async {
+    homeTabController.isCheckLoading.value = true;
     homeController.bottomNavIndex.value = 0;
-    homeTabController.fetchDataChooseQuestion();
+    await homeTabController.fetchDataChooseQuestion();
+    homeTabController.isCheckLoading.value = false;
   }
 }

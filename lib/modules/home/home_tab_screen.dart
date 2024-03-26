@@ -1,11 +1,14 @@
 // ignore_for_file: must_be_immutable, deprecated_member_use
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_getx_base/app_controller.dart';
 import 'package:flutter_getx_base/shared/constants/app_style.dart';
 import 'package:flutter_getx_base/shared/utils/size_utils.dart';
 import 'package:flutter_getx_base/theme/theme_helper.dart';
 import 'package:get/get.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 import '../../shared/constants/colors.dart';
 import 'home_tab_controller.dart';
@@ -30,16 +33,29 @@ class HomeTabScreen extends GetView<HomeTabController> {
               padding: EdgeInsets.all(getSize(20)),
               child: SingleChildScrollView(
                 child: Obx(
-                  () => controller.listQuestions.value != null &&
-                          controller.listQuestions.value?.length != 0
-                      ? controller.isCheckFinish.value
-                          ? ResultWidget(
-                              controller: controller,
+                  () => Stack(
+                    children: [
+                      controller.listQuestions.value != null &&
+                              controller.listQuestions.value?.length != 0
+                          ? controller.isCheckFinish.value
+                              ? ResultWidget(
+                                  controller: controller,
+                                )
+                              : QuizGameWidget(controller: controller)
+                          : Center(
+                              child: LoadingAnimation(),
+                            ),
+                      controller.isCheckLoading.value
+                          ? Positioned(
+                              top: 0,
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              child: LoadingAnimation(),
                             )
-                          : QuizGameWidget(controller: controller)
-                      : Center(
-                          child: CircularProgressIndicator(),
-                        ),
+                          : SizedBox.shrink(),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -64,7 +80,7 @@ class ResultWidget extends StatelessWidget {
       children: [
         Center(
           child: Text(
-            "Request",
+            "Result",
             style: AppStyles.black000Size20Fw700FfNunito,
           ),
         ),
@@ -78,23 +94,42 @@ class ResultWidget extends StatelessWidget {
         SizedBox(
           height: getSize(64),
         ),
-        ElevatedButton(
-          onPressed: () => controller.newQuizGame(),
-          child: Text(
-            "New game",
-            style: AppStyles.black000Size14Fw600FfNunito,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ElevatedButton(
+              onPressed: () => controller.newQuizGame(),
+              child: Text(
+                "New game",
+                style: AppStyles.black000Size14Fw600FfNunito,
+              ),
+            ),
+            SizedBox(
+              width: getSize(32),
+            ),
+            ElevatedButton(
+              onPressed: () => controller.viewHistory(),
+              child: Text(
+                "View history",
+                style: AppStyles.black000Size14Fw600FfNunito,
+              ),
+            ),
+          ],
         ),
         SizedBox(
-          height: getSize(32),
+          height: getSize(64),
         ),
-        ElevatedButton(
-          onPressed: () => controller.viewHistory(),
-          child: Text(
-            "View history",
-            style: AppStyles.black000Size14Fw600FfNunito,
-          ),
-        )
+        Text(
+          "Best results have been achieved",
+          style: AppStyles.black000Size14Fw600FfNunito,
+        ),
+        SizedBox(
+          height: getSize(16),
+        ),
+        Text(
+          "Correct answer: ${controller.bestResult()}",
+          style: AppStyles.black000Size14Fw400FfNunito,
+        ),
       ],
     );
   }
@@ -111,90 +146,123 @@ class QuizGameWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(
-      () => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      () => Stack(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "${controller.numbQuestion.value + 1}/${controller.listQuestions.value?.length ?? 0}",
-                style: AppStyles.black000Size20Fw700FfNunito,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "${controller.numbQuestion.value + 1}/${controller.listQuestions.value?.length ?? 0}",
+                    style: AppStyles.black000Size20Fw700FfNunito,
+                  ),
+                  Text(
+                    "Quiz",
+                    style: AppStyles.black000Size20Fw700FfNunito,
+                  ),
+                  Container(
+                    child: Text(
+                      "${controller.listQuestions.value?[controller.numbQuestion.value].difficulty}",
+                      style: AppStyles.black000Size14Fw600FfNunito
+                          .copyWith(color: appTheme.amberA600),
+                    ),
+                  )
+                ],
               ),
-              Text(
-                "Quiz",
-                style: AppStyles.black000Size20Fw700FfNunito,
+              SizedBox(
+                height: getSize(32),
               ),
-              Container(
+              Center(
                 child: Text(
-                  "${controller.listQuestions.value?[controller.numbQuestion.value].difficulty}",
-                  style: AppStyles.black000Size14Fw600FfNunito
-                      .copyWith(color: appTheme.amberA600),
+                  "${controller.listQuestions.value?[controller.numbQuestion.value].question}",
+                  style: AppStyles.black000Size18Fw600FfNunito,
                 ),
-              )
+              ),
+              SizedBox(
+                height: getSize(32),
+              ),
+              controller.listQuestions.value != null &&
+                      controller.listQuestions.value?.length != 0
+                  ? controller.listQuestions
+                              .value![controller.numbQuestion.value].type ==
+                          "multiple"
+                      ? AnswersWidget(controller: controller)
+                      : AnswersTrueFalseWidget(controller: controller)
+                  : SizedBox.shrink(),
+              SizedBox(
+                height: getSize(32),
+              ),
+              Center(
+                child: controller.isCheckCorrect.value == 0
+                    ? Text(
+                        "",
+                      )
+                    : controller.isCheckCorrect.value == 1
+                        ? Text(
+                            "Correct",
+                            style:
+                                AppStyles.black000Size20Fw700FfNunito.copyWith(
+                              color: appTheme.green300,
+                            ),
+                          )
+                        : Text(
+                            "Wrong",
+                            style:
+                                AppStyles.black000Size20Fw700FfNunito.copyWith(
+                              color: appTheme.red300,
+                            ),
+                          ),
+              ),
             ],
           ),
-          SizedBox(
-            height: getSize(32),
-          ),
-          Center(
-            child: Text(
-              "${controller.listQuestions.value?[controller.numbQuestion.value].question}",
-              style: AppStyles.black000Size18Fw600FfNunito,
-            ),
-          ),
-          SizedBox(
-            height: getSize(32),
-          ),
-          controller.listQuestions.value != null &&
-                  controller.listQuestions.value?.length != 0
-              ? controller.listQuestions.value![controller.numbQuestion.value]
-                          .type ==
-                      "multiple"
-                  ? AnswersWidget(controller: controller)
-                  : AnswersTrueFalseWidget(controller: controller)
-              : SizedBox.shrink(),
-          SizedBox(
-            height: getSize(32),
-          ),
-          Center(
-            child: controller.isCheckCorrect.value == 0
-                ? Text(
-                    "",
-                  )
-                : controller.isCheckCorrect.value == 1
-                    ? Text(
-                        "Correct",
-                        style: AppStyles.black000Size20Fw700FfNunito.copyWith(
-                          color: appTheme.green300,
-                        ),
-                      )
-                    : Text(
-                        "Wrong",
-                        style: AppStyles.black000Size20Fw700FfNunito.copyWith(
-                          color: appTheme.red300,
-                        ),
-                      ),
-          ),
-          SizedBox(
-            height: getSize(48),
-          ),
-          Center(
-            child: ElevatedButton(
-              child: Text(
-                controller.listQuestions.value?.length ==
-                        (controller.numbQuestion.value + 1)
-                    ? "Submit Quiz"
-                    : "Next",
-                style: AppStyles.black000Size16Fw600FfNunito,
-              ),
-              onPressed: () => controller.listQuestions.value?.length ==
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: InkWell(
+              highlightColor: Colors.red,
+              onTap: () => controller.listQuestions.value?.length ==
                       (controller.numbQuestion.value + 1)
                   ? controller.finishQuestion()
                   : controller.nextQuestion(),
+              child: Container(
+                alignment: Alignment.center,
+                padding: EdgeInsets.symmetric(
+                  vertical: 6,
+                  horizontal: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: appTheme.gray300,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  controller.listQuestions.value?.length ==
+                          (controller.numbQuestion.value + 1)
+                      ? "Submit Quiz"
+                      : "Next",
+                  style: AppStyles.black000Size14Fw600FfNunito,
+                ),
+              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class LoadingAnimation extends StatelessWidget {
+  LoadingAnimation({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: LoadingAnimationWidget.discreteCircle(
+        color: Colors.white,
+        size: 32,
       ),
     );
   }
