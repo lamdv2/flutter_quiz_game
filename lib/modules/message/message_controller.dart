@@ -15,7 +15,7 @@ class MessageController extends GetxController {
   }
 
   String formatDateTime(DateTime dateTime) {
-    return DateFormat('HH:mm:ss').format(dateTime);
+    return DateFormat('dd/MM/yy HH:mm').format(dateTime);
   }
 
   Future<void> getHistoryFromSharedPreferences() async {
@@ -30,6 +30,7 @@ class MessageController extends GetxController {
         final QuizHistory history = QuizHistory.fromJson(historyJson);
         historyList.value!.add(history);
       });
+      historyList.value = historyList.value!.reversed.toList();
     } catch (e) {
       print('Error getting history: $e');
     }

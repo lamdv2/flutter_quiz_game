@@ -19,27 +19,32 @@ class MessageScreen extends GetView<MessageController> {
   Widget build(BuildContext context) {
     controller.getHistoryFromSharedPreferences();
     return SafeArea(
-      child: Scaffold(
-        backgroundColor: appController.isDarkModeOn.value
-            ? ColorConstants.darkBackground
-            : ColorConstants.lightBackground,
-        extendBody: true,
-        resizeToAvoidBottomInset: true,
-        body: Padding(
-          padding: EdgeInsets.all(getSize(20)),
-          child: SingleChildScrollView(
-            child: Obx(
-              () => Column(
-                children: [
-                  for (var history in controller.historyList.value ?? [])
-                    ItemHistoryWidget(
-                      controller: controller,
-                      quizHistory: history,
+      child: RefreshIndicator(
+        onRefresh: () async {
+          controller.getHistoryFromSharedPreferences();
+        },
+        child: Scaffold(
+          backgroundColor: appController.isDarkModeOn.value
+              ? ColorConstants.darkBackground
+              : ColorConstants.lightBackground,
+          extendBody: true,
+          resizeToAvoidBottomInset: true,
+          body: Padding(
+            padding: EdgeInsets.all(getSize(20)),
+            child: SingleChildScrollView(
+              child: Obx(
+                () => Column(
+                  children: [
+                    for (var history in controller.historyList.value ?? [])
+                      ItemHistoryWidget(
+                        controller: controller,
+                        quizHistory: history,
+                      ),
+                    SizedBox(
+                      height: getSize(48),
                     ),
-                  SizedBox(
-                    height: getSize(48),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -81,7 +86,7 @@ class ItemHistoryWidget extends StatelessWidget {
                 "${controller.formatDateTime(
                   quizHistory.time,
                 )}",
-                style: AppStyles.black000Size18Fw600FfNunito,
+                style: AppStyles.black000Size14Fw400FfNunito,
               ),
             ],
           ),
